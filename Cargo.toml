@@ -1,0 +1,8 @@
+[package]
+name = "totp"
+version = "0.1.0"
+authors = ["Stipe Kotarac <stipe@kotarac.net>"]
+
+[dependencies]
+oath = "0.1.4"
+base32 = "0.3.1"
