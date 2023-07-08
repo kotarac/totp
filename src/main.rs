@@ -34,7 +34,7 @@ fn help() {
 
 fn handle(secret: &str) {
 	match totp(secret) {
-		Ok(code) => println!("{}", code),
+		Ok(code) => println!("{:06}", code),
 		Err(err) => error(err.to_string().as_ref()),
 	}
 }
