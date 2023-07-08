@@ -1,6 +1,6 @@
 [package]
 name = "totp"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Stipe Kotarac <stipe@kotarac.net>"]
 license = "MIT"
 description = "CLI tool for generating TOTP codes."
