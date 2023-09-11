@@ -6,7 +6,7 @@ use std::env;
 use std::process;
 
 fn totp(secret: &str) -> Result<u64, &'static str> {
-	let secret_bytes = try!(base32::decode(base32::Alphabet::RFC4648 {padding: false}, secret).ok_or("invalid base32"));
+	let secret_bytes = base32::decode(base32::Alphabet::RFC4648 {padding: false}, secret).ok_or("invalid base32")?;
 	let code: u64 = oath::totp_raw(&secret_bytes, 6, 0, 30);
 	Ok(code)
 }
