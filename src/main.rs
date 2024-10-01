@@ -20,6 +20,10 @@ struct Args {
     /// The Unix time form which to start counting steps
     #[arg(short, long, default_value_t = 0)]
     epoch: u64,
+
+    /// The number of digits in the TOTP code
+    #[arg(short, long, default_value_t = 6)]
+    digits: u32,
 }
 
 fn main() {
@@ -29,14 +33,13 @@ fn main() {
         .base32_secret
         .unwrap_or_else(|| stdin().unwrap_or_else(|s| error(s)));
 
-    match totp(&base32_secret, args.epoch, args.interval) {
-        Ok(code) => println!("{:06}", code),
+    match totp(&base32_secret, args.digits, args.epoch, args.interval) {
+        Ok(code) => println!("{:0digits$}", code, digits = args.digits as usize),
         Err(err) => error(err.to_string().as_ref()),
     };
 }
 
-fn totp(secret: &str, epoch: u64, interval: u64) -> Result<u64, &'static str> {
-    let digits = 6;
+fn totp(secret: &str, digits: u32, epoch: u64, interval: u64) -> Result<u64, &'static str> {
     let secret_bytes = base32::decode(base32::Alphabet::Rfc4648 { padding: false }, secret)
         .ok_or("Invalid base32")?;
     let mut hmac: Hmac<Sha1> =
