@@ -15,7 +15,7 @@ struct Args {
     /// The Base32-encoded secret key (defaults to stdin)
     base32_secret: Option<String>,
 
-    /// The time step in seconds
+    /// The time step in seconds (the token period)
     #[arg(short, long, default_value_t = 30)]
     interval: u64,
 
