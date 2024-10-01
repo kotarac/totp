@@ -239,7 +239,7 @@ dependencies = [
 
 [[package]]
 name = "totp"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "base32",
  "clap",
