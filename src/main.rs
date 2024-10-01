@@ -33,7 +33,8 @@ fn main() {
 
     let base32_secret = args
         .base32_secret
-        .unwrap_or_else(|| read_line_from_stdin().unwrap_or_else(|s| print_error_and_exit(s)));
+        .unwrap_or_else(|| read_line_from_stdin().unwrap_or_else(|s| print_error_and_exit(s)))
+        .to_ascii_uppercase();
 
     match totp(&base32_secret, args.digits, args.epoch, args.interval) {
         Ok(code) => println!("{:0digits$}", code, digits = args.digits as usize),
