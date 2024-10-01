@@ -7,8 +7,29 @@ use std::io::{self, Write};
 use std::process;
 use std::time;
 
-fn totp(secret: &str) -> Result<u64, &'static str> {
-    let interval = 30;
+// usage with an argument: totp <base32_secret>
+// usage reading from stdin: echo <base32_secret> | totp
+#[derive(Parser)]
+struct Args {
+    base32_secret: Option<String>,
+    #[arg(short, long, default_value_t = 30)]
+    interval: u64,
+}
+
+fn main() {
+    let args = Args::parse();
+
+    let base32_secret = args
+        .base32_secret
+        .unwrap_or_else(|| stdin().unwrap_or_else(|s| error(s)));
+
+    match totp(&base32_secret, args.interval) {
+        Ok(code) => println!("{:06}", code),
+        Err(err) => error(err.to_string().as_ref()),
+    };
+}
+
+fn totp(secret: &str, interval: u64) -> Result<u64, &'static str> {
     let epoch = 0;
     let digits = 6;
     let secret_bytes = base32::decode(base32::Alphabet::Rfc4648 { padding: false }, secret)
@@ -47,27 +68,4 @@ fn stdin() -> Result<String, &'static str> {
 fn error(err: &str) -> ! {
     writeln!(&mut ::std::io::stderr(), "error: {}, try --help", err).unwrap();
     process::exit(1);
-}
-
-fn handle(secret: &str) {
-    match totp(secret) {
-        Ok(code) => println!("{:06}", code),
-        Err(err) => error(err.to_string().as_ref()),
-    }
-}
-
-// usage with an argument: totp <base32_secret>
-// usage reading from stdin: echo <base32_secret> | totp
-#[derive(Parser)]
-struct Args {
-    base32_secret: Option<String>,
-}
-
-fn main() {
-    let args = Args::parse();
-
-    let base32_secret = args
-        .base32_secret
-        .unwrap_or_else(|| stdin().unwrap_or_else(|s| error(s)));
-    handle(&base32_secret);
 }
