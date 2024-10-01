@@ -56,8 +56,7 @@ fn totp(secret: &str, digits: u32, epoch: u64, interval: u64) -> Result<u64, &'s
     let result = hmac.finalize().into_bytes();
     let offset = (result[19] & 0b1111) as usize;
     Ok(
-        (u32::from_be_bytes(result[offset..offset + 4].try_into().unwrap()) as u64
-            & 0b1111111111111111111111111111111)
+        (u32::from_be_bytes(result[offset..offset + 4].try_into().unwrap()) as u64)
             % 10u64.pow(digits),
     )
 }
