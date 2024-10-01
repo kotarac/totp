@@ -1,6 +1,8 @@
 [package]
 name = "totp"
 version = "0.2.1"
+edition = "2021"
+
 authors = ["Stipe Kotarac <stipe@kotarac.net>"]
 license = "MIT"
 description = "CLI tool for generating TOTP codes."
@@ -8,5 +10,7 @@ homepage = "https://github.com/kotarac/totp"
 repository = "https://github.com/kotarac/totp"
 
 [dependencies]
-oath = "0.1.4"
-base32 = "0.3.1"
+base32 = "0.5.1"
+clap = { version = "4.5.18", features = ["derive"] }
+hmac = "0.12.1"
+sha1 = "0.10.6"

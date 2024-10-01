@@ -1,23 +1,24 @@
 # totp
 
-CLI tool for generating TOTP codes.
+A Time-Based One-Time Password (TOTP) generator CLI.
 
 ## Usage
 
 ```
-# lists usage information
-totp -h
-totp --help
-```
+A Time-Based One-Time Password (TOTP) generator
 
-```
-# generates a code for the specified secret
-totp <base32 secret>
-```
+To read from stdin: `echo <BASE32_SECRET> | totp`
 
-```
-# reads the secret from stdin and generates a code
-echo <base32 secret> | totp
+Usage: totp [OPTIONS] [BASE32_SECRET]
+
+Arguments:
+  [BASE32_SECRET]  The Base32-encoded secret key (defaults to stdin)
+
+Options:
+  -i, --interval <INTERVAL>  The time step in seconds (the token period) [default: 30]
+  -e, --epoch <EPOCH>        The Unix time form which to start counting steps [default: 0]
+  -d, --digits <DIGITS>      The number of digits in the TOTP code [default: 6]
+  -h, --help                 Print help (see more with '--help')
 ```
 
 ## License
