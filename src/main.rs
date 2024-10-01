@@ -7,7 +7,9 @@ use std::io::{self, Write};
 use std::process;
 use std::time;
 
-/// A Time-Based One-Time Password (TOTP) generator CLI
+/// A Time-Based One-Time Password (TOTP) generator
+///
+/// To read from stdin: `echo <BASE32_SECRET> | totp`
 #[derive(Parser)]
 struct Args {
     /// The Base32-encoded secret key (defaults to stdin)
@@ -73,6 +75,25 @@ fn stdin() -> Result<String, &'static str> {
 }
 
 fn error(err: &str) -> ! {
-    writeln!(&mut ::std::io::stderr(), "error: {}, try --help", err).unwrap();
+    macro_rules! red {
+        ($e:expr) => {
+            concat!("\x1B[31m", $e, "\x1B[0m")
+        };
+    }
+
+    macro_rules! bold {
+        ($e:expr) => {
+            concat!("\x1B[1m", $e, "\x1B[0m")
+        };
+    }
+
+    writeln!(
+        &mut ::std::io::stderr(),
+        "{} {}\n\nFor more information, try '{}'.",
+        bold!(red!("error:")),
+        err,
+        bold!("--help")
+    )
+    .unwrap();
     process::exit(1);
 }
