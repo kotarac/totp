@@ -1,15 +1,33 @@
-extern crate oath;
-
 use base32;
+use hmac::{Hmac, Mac};
+use sha1::Sha1;
+
 use std::env;
 use std::io::{self, Write};
 use std::process;
+use std::time;
 
 fn totp(secret: &str) -> Result<u64, &'static str> {
+    let interval = 30;
+    let digits = 6;
     let secret_bytes = base32::decode(base32::Alphabet::Rfc4648 { padding: false }, secret)
         .ok_or("invalid base32")?;
-    let code: u64 = oath::totp_raw(&secret_bytes, 6, 0, 30);
-    Ok(code)
+    let mut hmac: Hmac<Sha1> = Mac::new_from_slice(&secret_bytes).unwrap(); // should never panic
+    hmac.update(
+        &(time::SystemTime::now()
+            .duration_since(time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs()
+            / interval)
+            .to_be_bytes(),
+    );
+    let result = hmac.finalize().into_bytes();
+    let offset = (result[19] & 0b1111) as usize;
+    Ok(
+        (u32::from_be_bytes(result[offset..offset + 4].try_into().unwrap()) as u64
+            & 0b1111111111111111111111111111111)
+            % 10u64.pow(digits),
+    )
 }
 
 fn stdin() -> Result<String, &'static str> {

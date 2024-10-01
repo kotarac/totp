@@ -11,4 +11,5 @@ repository = "https://github.com/kotarac/totp"
 
 [dependencies]
 base32 = "0.5.1"
-oath = "0.1.4"
+hmac = "0.12.1"
+sha1 = "0.10.6"
