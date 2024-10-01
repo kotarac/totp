@@ -3,7 +3,7 @@ use clap::Parser;
 use hmac::{Hmac, Mac};
 use sha1::Sha1;
 
-use std::io::{self, Write};
+use std::io;
 use std::process;
 use std::time;
 
@@ -33,11 +33,11 @@ fn main() {
 
     let base32_secret = args
         .base32_secret
-        .unwrap_or_else(|| read_line_from_stdin().unwrap_or_else(|s| error(s)));
+        .unwrap_or_else(|| read_line_from_stdin().unwrap_or_else(|s| print_error_and_exit(s)));
 
     match totp(&base32_secret, args.digits, args.epoch, args.interval) {
         Ok(code) => println!("{:0digits$}", code, digits = args.digits as usize),
-        Err(err) => error(err.to_string().as_ref()),
+        Err(err) => print_error_and_exit(err.to_string().as_ref()),
     };
 }
 
@@ -71,7 +71,7 @@ fn read_line_from_stdin() -> Result<String, &'static str> {
     Ok(input.trim().to_string())
 }
 
-fn error(err: &str) -> ! {
+fn print_error_and_exit(err: &str) -> ! {
     macro_rules! red {
         ($e:expr) => {
             concat!("\x1B[31m", $e, "\x1B[0m")
@@ -84,13 +84,11 @@ fn error(err: &str) -> ! {
         };
     }
 
-    writeln!(
-        &mut ::std::io::stderr(),
+    eprintln!(
         "{} {}\n\nFor more information, try '{}'.",
         bold!(red!("error:")),
         err,
         bold!("--help")
-    )
-    .unwrap();
+    );
     process::exit(1);
 }
