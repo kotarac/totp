@@ -1,8 +1,8 @@
 use base32;
+use clap::Parser;
 use hmac::{Hmac, Mac};
 use sha1::Sha1;
 
-use std::env;
 use std::io::{self, Write};
 use std::process;
 use std::time;
@@ -44,14 +44,9 @@ fn stdin() -> Result<String, &'static str> {
     }
 }
 
-fn error(err: &str) {
+fn error(err: &str) -> ! {
     writeln!(&mut ::std::io::stderr(), "error: {}, try --help", err).unwrap();
     process::exit(1);
-}
-
-fn help() {
-    println!("usage with an argument: totp <base32 secret>");
-    println!("usage reading from stdin: echo <base32 secret> | totp");
 }
 
 fn handle(secret: &str) {
@@ -61,21 +56,18 @@ fn handle(secret: &str) {
     }
 }
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
+// usage with an argument: totp <base32_secret>
+// usage reading from stdin: echo <base32_secret> | totp
+#[derive(Parser)]
+struct Args {
+    base32_secret: Option<String>,
+}
 
-    match args.len() {
-        1 => match stdin() {
-            Ok(input) => handle(input.as_ref()),
-            Err(err) => error(err.to_string().as_ref()),
-        },
-        2 => match args[1].as_ref() {
-            "-h" => help(),
-            "--help" => help(),
-            _ => handle(args[1].as_ref()),
-        },
-        _ => {
-            error("invalid usage");
-        }
-    }
+fn main() {
+    let args = Args::parse();
+
+    let base32_secret = args
+        .base32_secret
+        .unwrap_or_else(|| stdin().unwrap_or_else(|s| error(s)));
+    handle(&base32_secret);
 }
