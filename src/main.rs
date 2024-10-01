@@ -33,7 +33,7 @@ fn main() {
 
     let base32_secret = args
         .base32_secret
-        .unwrap_or_else(|| stdin().unwrap_or_else(|s| error(s)));
+        .unwrap_or_else(|| read_line_from_stdin().unwrap_or_else(|s| error(s)));
 
     match totp(&base32_secret, args.digits, args.epoch, args.interval) {
         Ok(code) => println!("{:0digits$}", code, digits = args.digits as usize),
@@ -63,15 +63,12 @@ fn totp(secret: &str, digits: u32, epoch: u64, interval: u64) -> Result<u64, &'s
     )
 }
 
-fn stdin() -> Result<String, &'static str> {
+fn read_line_from_stdin() -> Result<String, &'static str> {
     let mut input = String::new();
-    match io::stdin().read_line(&mut input) {
-        Ok(_) => {
-            let input: String = input.trim().to_string();
-            Ok(input)
-        }
-        Err(_) => return Err("error reading stdin"),
-    }
+    io::stdin()
+        .read_line(&mut input)
+        .map_err(|_| "Failed to read stdin")?;
+    Ok(input.trim().to_string())
 }
 
 fn error(err: &str) -> ! {
