@@ -16,6 +16,10 @@ struct Args {
     /// The time step in seconds
     #[arg(short, long, default_value_t = 30)]
     interval: u64,
+
+    /// The Unix time form which to start counting steps
+    #[arg(short, long, default_value_t = 0)]
+    epoch: u64,
 }
 
 fn main() {
@@ -25,17 +29,16 @@ fn main() {
         .base32_secret
         .unwrap_or_else(|| stdin().unwrap_or_else(|s| error(s)));
 
-    match totp(&base32_secret, args.interval) {
+    match totp(&base32_secret, args.epoch, args.interval) {
         Ok(code) => println!("{:06}", code),
         Err(err) => error(err.to_string().as_ref()),
     };
 }
 
-fn totp(secret: &str, interval: u64) -> Result<u64, &'static str> {
-    let epoch = 0;
+fn totp(secret: &str, epoch: u64, interval: u64) -> Result<u64, &'static str> {
     let digits = 6;
     let secret_bytes = base32::decode(base32::Alphabet::Rfc4648 { padding: false }, secret)
-        .ok_or("invalid base32")?;
+        .ok_or("Invalid base32")?;
     let mut hmac: Hmac<Sha1> =
         Mac::new_from_slice(&secret_bytes).expect("HMAC should take any length");
     hmac.update(
