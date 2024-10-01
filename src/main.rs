@@ -7,11 +7,13 @@ use std::io::{self, Write};
 use std::process;
 use std::time;
 
-// usage with an argument: totp <base32_secret>
-// usage reading from stdin: echo <base32_secret> | totp
+/// A Time-Based One-Time Password (TOTP) generator CLI
 #[derive(Parser)]
 struct Args {
+    /// The Base32-encoded secret key (defaults to stdin)
     base32_secret: Option<String>,
+
+    /// The time step in seconds
     #[arg(short, long, default_value_t = 30)]
     interval: u64,
 }
