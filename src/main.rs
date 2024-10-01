@@ -9,15 +9,18 @@ use std::time;
 
 fn totp(secret: &str) -> Result<u64, &'static str> {
     let interval = 30;
+    let epoch = 0;
     let digits = 6;
     let secret_bytes = base32::decode(base32::Alphabet::Rfc4648 { padding: false }, secret)
         .ok_or("invalid base32")?;
-    let mut hmac: Hmac<Sha1> = Mac::new_from_slice(&secret_bytes).unwrap(); // should never panic
+    let mut hmac: Hmac<Sha1> =
+        Mac::new_from_slice(&secret_bytes).expect("HMAC should take any length");
     hmac.update(
-        &(time::SystemTime::now()
+        &((time::SystemTime::now()
             .duration_since(time::UNIX_EPOCH)
-            .unwrap()
+            .expect("Time went backwards")
             .as_secs()
+            - epoch)
             / interval)
             .to_be_bytes(),
     );
