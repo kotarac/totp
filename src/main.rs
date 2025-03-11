@@ -42,7 +42,7 @@ fn main() {
     };
 }
 
-fn totp(secret: &str, digits: u32, epoch: u64, interval: u64) -> Result<u64, &'static str> {
+fn totp(secret: &str, digits: u32, epoch: u64, interval: u64) -> Result<u32, &'static str> {
     let secret_bytes = base32::decode(base32::Alphabet::Rfc4648 { padding: false }, secret)
         .ok_or("Invalid base32")?;
     let mut hmac: Hmac<Sha1> =
@@ -59,8 +59,8 @@ fn totp(secret: &str, digits: u32, epoch: u64, interval: u64) -> Result<u64, &'s
     let result = hmac.finalize().into_bytes();
     let offset = (result[19] & 0b1111) as usize;
     Ok(
-        (u32::from_be_bytes(result[offset..offset + 4].try_into().unwrap()) as u64)
-            % 10u64.pow(digits),
+        (u32::from_be_bytes(result[offset..offset + 4].try_into().unwrap()) & 0x7fff_ffff)
+            % 10u32.pow(digits),
     )
 }
 
