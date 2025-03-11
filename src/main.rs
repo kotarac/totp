@@ -26,6 +26,10 @@ struct Args {
     /// The number of digits in the TOTP code
     #[arg(short, long, default_value_t = 6)]
     digits: u32,
+
+    /// The number of seconds that have passed since a particular epoch (defaults to current Unix time)
+    #[arg(short, long)]
+    seconds_since_epoch: Option<u64>,
 }
 
 fn main() {
@@ -35,27 +39,37 @@ fn main() {
         .base32_secret
         .unwrap_or_else(|| read_line_from_stdin().unwrap_or_else(|s| print_error_and_exit(s)))
         .to_ascii_uppercase();
+    let seconds_since_epoch = args.seconds_since_epoch.unwrap_or_else(|| {
+        time::SystemTime::now()
+            .duration_since(time::UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_secs()
+            - args.epoch
+    });
 
-    match totp(&base32_secret, args.digits, args.epoch, args.interval) {
+    match totp(
+        &base32_secret,
+        args.digits,
+        args.interval,
+        seconds_since_epoch,
+    ) {
         Ok(code) => println!("{:0digits$}", code, digits = args.digits as usize),
         Err(err) => print_error_and_exit(err.to_string().as_ref()),
     };
 }
 
-fn totp(secret: &str, digits: u32, epoch: u64, interval: u64) -> Result<u32, &'static str> {
+fn totp(
+    secret: &str,
+    digits: u32,
+    interval: u64,
+    seconds_since_epoch: u64,
+) -> Result<u32, &'static str> {
     let secret_bytes = base32::decode(base32::Alphabet::Rfc4648 { padding: false }, secret)
         .ok_or("Invalid base32")?;
     let mut hmac: Hmac<Sha1> =
         Mac::new_from_slice(&secret_bytes).expect("HMAC should take any length");
-    hmac.update(
-        &((time::SystemTime::now()
-            .duration_since(time::UNIX_EPOCH)
-            .expect("Time went backwards")
-            .as_secs()
-            - epoch)
-            / interval)
-            .to_be_bytes(),
-    );
+    hmac.update(&(seconds_since_epoch / interval).to_be_bytes());
+
     let result = hmac.finalize().into_bytes();
     let offset = (result[19] & 0b1111) as usize;
     Ok(
