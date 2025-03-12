@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/kotarac/totp/compare/v0.3.0...v0.4.0) (2025-03-12)
+
+
+### Features
+
+* mask signedness, optional seconds_since_epoch arg ([#7](https://github.com/kotarac/totp/issues/7)) ([e5a3fa8](https://github.com/kotarac/totp/commit/e5a3fa8a0513e6bbbdbb0e83307af6061d795752))
+
 ## [0.3.0](https://github.com/kotarac/totp/compare/v0.2.1...v0.3.0) (2024-10-01)
 
 
